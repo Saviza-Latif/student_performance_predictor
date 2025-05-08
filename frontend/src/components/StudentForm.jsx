@@ -21,6 +21,7 @@ export default function StudentForm({ setPrediction }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
     const formatted = {
       ...formData,
       Hours_Studied: parseFloat(formData.Hours_Studied),
@@ -39,16 +40,21 @@ export default function StudentForm({ setPrediction }) {
       Physical_Activity: parseFloat(formData.Physical_Activity),
       Learning_Disabilities: parseInt(formData.Learning_Disabilities),
       Distance_from_Home: parseFloat(formData.Distance_from_Home),
+      School_Type: formData.School_Type,
+      Parental_Education_Level: formData.Parental_Education_Level,
+      Gender: formData.Gender,
     };
-
+  
     try {
       const response = await axios.post('http://localhost:8000/predict', formatted);
-      setPrediction(response.data.predicted_score);
+      console.log("Prediction Result: ", response.data); 
+      setPrediction(response.data); // pass full prediction result
     } catch (error) {
       console.error('Prediction error:', error);
-      alert("Prediction failed. Please try again.");
+      alert("Prediction failed. Please check inputs and try again.");
     }
   };
+  
 
   const numericFields = [
     ['Hours_Studied', 'Hours Studied', 0, 15, 0.1, '0–15 hrs/day'],

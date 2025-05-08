@@ -3,13 +3,13 @@ import StudentForm from './components/StudentForm';
 import PredictionResult from './components/PredictionResult';
 
 export default function App() {
-  const [prediction, setPrediction] = useState(null);
+  const [predictionResult, setPredictionResult] = useState(null);
 
   return (
     <div style={{ padding: 20 }}>
       <h1>Student Performance Predictor</h1>
-      <StudentForm setPrediction={setPrediction} />
-      {prediction !== null && <PredictionResult score={prediction} />}
+      <StudentForm setPrediction={setPredictionResult} />
+      {predictionResult && <PredictionResult result={predictionResult} />}
     </div>
   );
 }
