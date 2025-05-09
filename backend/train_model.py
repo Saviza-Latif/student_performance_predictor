@@ -15,9 +15,18 @@ df = pd.read_csv("D:/ai_project/backend/StudentPerformanceFactors.csv")
 X = df.drop("Exam_Score", axis=1)
 y = df["Exam_Score"]
 
-# Identify column types
-numerical_cols = X.select_dtypes(include=["int64", "float64"]).columns.tolist()
-categorical_cols = X.select_dtypes(include=["object"]).columns.tolist()
+# Identify column types correctly
+numerical_cols = [
+    'Hours_Studied', 'Attendance', 'Sleep_Hours', 'Previous_Scores',
+    'Tutoring_Sessions', 'Physical_Activity'
+]
+
+categorical_cols = [
+    'Parental_Involvement', 'Access_to_Resources', 'Extracurricular_Activities',
+    'Motivation_Level', 'Internet_Access', 'Family_Income', 'Teacher_Quality',
+    'School_Type', 'Peer_Influence', 'Learning_Disabilities',
+    'Parental_Education_Level', 'Distance_from_Home', 'Gender'
+]
 
 # Preprocessing pipelines
 num_pipeline = Pipeline([
@@ -50,49 +59,33 @@ pipeline.fit(X_train, y_train)
 # Save model
 model_path = "D:/ai_project/backend/app/model/student_performance_model.pkl"
 joblib.dump(pipeline, model_path)
-print(f"Model saved to: {model_path}")
+print(f"✅ Model saved to: {model_path}")
 
 # ------------------------------------------------------
-# Generate data-driven suggestion rules
+# Suggestion Rules (based on high performers)
 # ------------------------------------------------------
 
-# Threshold to define high-performing students
-
-
-# Filter high scorers
 high_scorers = df[df['Exam_Score'] >= 80]
 
-# Define numerical and categorical columns
-numerical_cols = [
-    'Hours_Studied', 'Attendance', 'Access_to_Resources', 'Extracurricular_Activities',
-    'Sleep_Hours', 'Motivation_Level', 'Internet_Access', 'Tutoring_Sessions',
-    'Peer_Influence', 'Physical_Activity'
-]
-
-categorical_cols = ['Parental_Involvement', 'Learning_Resources']
-
+# Suggestion rules for numerical and categorical values
 suggestion_rules = {}
 
-# Numerical: compute mean only if column is numeric
+# Numerical suggestions: compute average
 for col in numerical_cols:
     if col in high_scorers.columns:
         high_scorers.loc[:, col] = pd.to_numeric(high_scorers[col], errors='coerce')
+
         if high_scorers[col].notnull().any():
             suggestion_rules[col] = round(high_scorers[col].mean(), 2)
 
-# Categorical: compute mode
+# Categorical suggestions: compute mode
 for col in categorical_cols:
     if col in high_scorers.columns:
         mode_val = high_scorers[col].mode()
         if not mode_val.empty:
             suggestion_rules[col] = mode_val[0]
 
-
-
-
-
-
 # Save suggestion rules
 suggestion_path = "D:/ai_project/backend/app/model/suggestion_rules.pkl"
 joblib.dump(suggestion_rules, suggestion_path)
-print(f"Suggestion rules saved to: {suggestion_path}")
+print(f"✅ Suggestion rules saved to: {suggestion_path}")

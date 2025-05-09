@@ -6,6 +6,7 @@ import {
   List,
   ListItem,
   Divider,
+  CircularProgress,
 } from '@mui/material';
 import {
   BarChart,
@@ -17,7 +18,20 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-export default function PredictionResult({ result }) {
+export default function PredictionResult({ result, isLoading }) {
+  if (isLoading) {
+    return (
+      <Card sx={{ mt: 4, textAlign: 'center' }}>
+        <CardContent>
+          <CircularProgress color="primary" />
+          <Typography variant="h6" sx={{ mt: 2 }}>
+            Loading Prediction Results...
+          </Typography>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (!result) return null;
 
   const { predicted_score, contributions = {}, suggestions = [] } = result;

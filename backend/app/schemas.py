@@ -1,22 +1,24 @@
 from pydantic import BaseModel
+from typing import Literal
+
 
 class StudentData(BaseModel):
     Hours_Studied: float
     Attendance: float
-    Parental_Involvement: float
-    Access_to_Resources: float
-    Extracurricular_Activities: float
+    Parental_Involvement: Literal['Low', 'Medium', 'High']
+    Access_to_Resources: Literal['Low', 'Medium', 'High']
+    Extracurricular_Activities: Literal['Yes', 'No']
     Sleep_Hours: float
     Previous_Scores: float
-    Motivation_Level: float
-    Internet_Access: int
+    Motivation_Level: Literal['Low', 'Medium', 'High']
+    Internet_Access: Literal['Yes', 'No']
     Tutoring_Sessions: int
-    Family_Income: float
-    Teacher_Quality: float
-    School_Type: str
-    Peer_Influence: float
+    Family_Income: Literal['Low', 'Medium', 'High']
+    Teacher_Quality: Literal['Low', 'Medium', 'High']
+    School_Type: Literal['Public', 'Private']
+    Peer_Influence: Literal['Positive', 'Neutral', 'Negative']
     Physical_Activity: float
-    Learning_Disabilities: int
-    Parental_Education_Level: str
-    Distance_from_Home: float
-    Gender: str
+    Learning_Disabilities: Literal['Yes', 'No']
+    Parental_Education_Level: Literal['High School', 'College', 'Postgraduate']
+    Distance_from_Home: Literal['Near', 'Moderate', 'Far']
+    Gender: Literal['Male', 'Female']

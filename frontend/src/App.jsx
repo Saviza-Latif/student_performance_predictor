@@ -7,8 +7,12 @@ export default function App() {
 
   return (
     <div style={{ padding: 20 }}>
-      <h1>Student Performance Predictor</h1>
+      <h1 style={{ textAlign: 'center', fontWeight: 'bold' }}>Student Performance Predictor</h1>
+
+      {/* Form to input student data */}
       <StudentForm setPrediction={setPredictionResult} />
+
+      {/* Render PredictionResult component once the prediction is available */}
       {predictionResult && <PredictionResult result={predictionResult} />}
     </div>
   );
