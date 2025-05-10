@@ -1,4 +1,6 @@
-import React from 'react';
+import React from "react";
+import RadarChart from './RadarChart';
+import BarComparisonChart from './BarComparisonChart';
 import {
   Typography,
   Card,
@@ -18,7 +20,8 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-export default function PredictionResult({ result, isLoading }) {
+export default function PredictionResult({ result, isLoading, inputData }) {
+  console.log("Received studentData:",inputData);
   if (isLoading) {
     return (
       <Card sx={{ mt: 4, textAlign: 'center' }}>
@@ -36,17 +39,16 @@ export default function PredictionResult({ result, isLoading }) {
 
   const { predicted_score, contributions = {}, suggestions = [] } = result;
 
-  // Transform SHAP dict to array for bar chart
   const data = Object.entries(contributions).map(([feature, importance]) => ({
     feature,
-    importance: Math.abs(importance), // Absolute value for chart
+    importance: Math.abs(importance),
   }));
 
   return (
     <Card sx={{ mt: 4 }}>
       <CardContent>
         <Typography variant="h5" color="primary" gutterBottom>
-          Predicted Exam Score: {predicted_score}
+          Predicted Exam Score: <strong>{predicted_score}</strong>
         </Typography>
 
         {data.length > 0 && (
@@ -80,6 +82,13 @@ export default function PredictionResult({ result, isLoading }) {
           </>
         )}
       </CardContent>
+
+      {inputData && (
+        <>
+          <RadarChart studentData={inputData} />
+          <BarComparisonChart studentData={inputData} />
+        </>
+      )}
     </Card>
   );
 }

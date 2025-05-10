@@ -4,16 +4,26 @@ import PredictionResult from './components/PredictionResult';
 
 export default function App() {
   const [predictionResult, setPredictionResult] = useState(null);
+  const [inputData, setInputData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
     <div style={{ padding: 20 }}>
-      <h1 style={{ textAlign: 'center', fontWeight: 'bold' }}>Student Performance Predictor</h1>
+      <h1 style={{ textAlign: 'center', fontWeight: 'bold' }}>
+        Student Performance Predictor
+      </h1>
 
-      {/* Form to input student data */}
-      <StudentForm setPrediction={setPredictionResult} />
+      <StudentForm
+        setPredictionResult={setPredictionResult}
+        setInputData={setInputData}
+        setIsLoading={setIsLoading}
+      />
 
-      {/* Render PredictionResult component once the prediction is available */}
-      {predictionResult && <PredictionResult result={predictionResult} />}
+      <PredictionResult
+        result={predictionResult}
+        inputData={inputData}
+        isLoading={isLoading}
+      />
     </div>
   );
 }
