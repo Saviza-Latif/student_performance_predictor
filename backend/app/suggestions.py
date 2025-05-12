@@ -1,5 +1,3 @@
-# backend/app/suggestions.py
-
 import joblib
 
 # Load suggestion rules
@@ -11,13 +9,19 @@ def generate_suggestions(data: dict) -> list:
     def check_numerical(key, message):
         if key in suggestion_rules and key in data:
             try:
-                if float(data[key]) < float(suggestion_rules[key]):
-                    suggestions.append(message.format(suggestion_rules[key]))
-            except:
-                pass  # Skip if comparison fails
+                # Ensure the value is a valid numerical comparison
+                data_value = float(data[key])
+                rule_value = float(suggestion_rules[key])
+                
+                # Compare and provide suggestions if needed
+                if data_value < rule_value:
+                    suggestions.append(message.format(rule_value))
+            except (ValueError, TypeError):
+                pass  # Skip if there's an error in comparison (e.g., missing or invalid data)
 
     def check_categorical(key, message):
         if key in suggestion_rules and key in data:
+            # Ensure proper case-insensitive comparison
             if str(data[key]).strip().lower() != str(suggestion_rules[key]).strip().lower():
                 suggestions.append(message.format(suggestion_rules[key]))
 

@@ -12,8 +12,7 @@ import {
   Box
 } from '@mui/material';
 
-const StudentForm = ({ setPredictionResult, setInputData, setIsLoading }) => {
-
+const StudentForm = ({ setPredictionResult, setInputData, setIsLoading, handleError }) => {
   const [formData, setFormData] = useState({
     Hours_Studied: '',
     Attendance: '',
@@ -36,6 +35,8 @@ const StudentForm = ({ setPredictionResult, setInputData, setIsLoading }) => {
     Gender: '',
   });
 
+  const [selectedModel, setSelectedModel] = useState("rf");
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -44,24 +45,42 @@ const StudentForm = ({ setPredictionResult, setInputData, setIsLoading }) => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true); // Show loading state
-    setInputData(formData); // Pass input data to parent
-    try {
-      const response = await fetch('http://localhost:8000/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      const result = await response.json();
-      setPredictionResult(result); // Pass prediction result to parent
-    } catch (err) {
-      console.error('Prediction error:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
+  setInputData(formData);
+
+  try {
+    // Step 1: Get prediction
+    const predictionRes = await fetch(`http://localhost:8000/predict?model=${selectedModel}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    });
+    const prediction = await predictionRes.json();
+
+    // Step 2: Get feature importance
+    const shapRes = await fetch(`http://localhost:8000/feature-importance?model=${selectedModel}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    });
+    const shapData = await shapRes.json();
+
+    // Step 3: Combine results
+    setPredictionResult({
+      predicted_score: prediction.predicted_score,
+      suggestions: prediction.suggestions || [],
+      contributions: shapData.feature_importance || {}, // Inject SHAP values
+    });
+
+  } catch (err) {
+    handleError('Error during prediction or feature importance: ' + err.message);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <Box sx={{ padding: 4, maxWidth: '100%', mx: 'auto' }}>
@@ -83,7 +102,6 @@ const StudentForm = ({ setPredictionResult, setInputData, setIsLoading }) => {
               ['Previous_Scores', 'Previous Scores', 'number', ''],
               ['Tutoring_Sessions', 'Tutoring Sessions', 'number', ''],
               ['Physical_Activity', 'Physical Activity', 'number', ''],
-              ['Distance_from_Home', 'Distance from Home', 'number', 'in km'],
             ].map(([name, label, type, placeholder]) => (
               <Grid item xs={12} sm={6} key={name}>
                 <TextField
@@ -112,6 +130,7 @@ const StudentForm = ({ setPredictionResult, setInputData, setIsLoading }) => {
               ['School_Type', 'School Type', ['Public', 'Private']],
               ['Peer_Influence', 'Peer Influence', ['Positive', 'Neutral', 'Negative']],
               ['Learning_Disabilities', 'Learning Disabilities', ['Yes', 'No']],
+              ['Distance_from_Home', 'Distance from Home', ['Near', 'Moderate', 'Far']],
               ['Parental_Education_Level', 'Parental Education Level', ['None', 'High School', 'College', 'Postgraduate']],
               ['Gender', 'Gender', ['Male', 'Female', 'Other']],
             ].map(([name, label, options]) => (
@@ -137,6 +156,22 @@ const StudentForm = ({ setPredictionResult, setInputData, setIsLoading }) => {
               </Grid>
             ))}
 
+            {/* Model Selector */}
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth required variant="outlined" size="medium">
+                <InputLabel id="model-label">Select Model</InputLabel>
+                <Select
+                  labelId="model-label"
+                  value={selectedModel}
+                  onChange={(e) => setSelectedModel(e.target.value)}
+                  label="Select Model"
+                >
+                  <MenuItem value="rf">Random Forest</MenuItem>
+                  <MenuItem value="xgb">XGBoost</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
             <Grid item xs={12}>
               <Button
                 type="submit"
@@ -144,13 +179,7 @@ const StudentForm = ({ setPredictionResult, setInputData, setIsLoading }) => {
                 color="primary"
                 fullWidth
                 size="large"
-                sx={{
-                  mt: 2,
-                  paddingY: 1.5,
-                  fontWeight: 'bold',
-                  fontSize: '1.1rem',
-                  borderRadius: 2,
-                }}
+                sx={{ mt: 2, paddingY: 1.5, fontWeight: 'bold', fontSize: '1.1rem', borderRadius: 2 }}
               >
                 Predict Performance
               </Button>

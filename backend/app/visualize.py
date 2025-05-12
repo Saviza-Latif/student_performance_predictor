@@ -6,7 +6,7 @@ from .utils import load_model, get_shap_values, predict_exam_score, get_dataset,
 
 router = APIRouter()
 
-# Extended schema for trend comparison
+
 class ScoreTrendInput(StudentData):
     previous_scores: List[float]
 

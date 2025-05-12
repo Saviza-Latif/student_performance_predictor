@@ -1,42 +1,42 @@
 import sys
-sys.path.append('D:/ai_project/backend/app') 
+import os
+sys.path.append('D:/ai_project/backend/app')
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 import pandas as pd
 import shap
 import joblib
 from fastapi.middleware.cors import CORSMiddleware
-from suggestions import generate_suggestions  # Assuming this is your suggestion function
+from suggestions import generate_suggestions
 
-# Load trained model and dataset
-model = joblib.load("D:/ai_project/backend/app/model/student_performance_model.pkl")
-rf_model = model.named_steps["model"]
-explainer = shap.TreeExplainer(rf_model)
 
-# Load the dataset for calculating averages/top performers
-dataset = pd.read_csv("D:/ai_project/backend/StudentPerformanceFactors.csv")
+MODEL_DIR = "D:/ai_project/backend/app/model"
+DATASET_PATH = "D:/ai_project/backend/StudentPerformanceFactors.csv"
+
+# Load dataset
+dataset = pd.read_csv(DATASET_PATH)
 
 # Define input schema
 class StudentData(BaseModel):
     Hours_Studied: float
     Attendance: float
-    Parental_Involvement: str  # Categorical
-    Access_to_Resources: str   # Categorical
-    Extracurricular_Activities: str  # Categorical
+    Parental_Involvement: str
+    Access_to_Resources: str
+    Extracurricular_Activities: str
     Sleep_Hours: float
     Previous_Scores: float
     Motivation_Level: str
-    Internet_Access: str       # Categorical
+    Internet_Access: str
     Tutoring_Sessions: int
     Family_Income: str
     Teacher_Quality: str
     School_Type: str
     Peer_Influence: str
     Physical_Activity: float
-    Learning_Disabilities: str  # Categorical
+    Learning_Disabilities: str
     Parental_Education_Level: str
-    Distance_from_Home: str     # Categorical
+    Distance_from_Home: str
     Gender: str
 
 # Setup FastAPI app
@@ -50,41 +50,62 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Load and cache models
+cached_models = {}
+
+def load_model(model_name: str):
+    if model_name not in cached_models:
+        model_path = os.path.join(MODEL_DIR, f"student_performance_{model_name}.pkl")
+        if not os.path.exists(model_path):
+            raise HTTPException(status_code=404, detail=f"Model '{model_name}' not found.")
+        cached_models[model_name] = joblib.load(model_path)
+    return cached_models[model_name]
+
+@app.get("/metrics")
+def get_model_metrics(model: str = Query("rf")):
+    try:
+        model_data = load_model(model)
+        metrics = model_data.get("metrics") if isinstance(model_data, dict) else {}
+        if not metrics:
+            raise HTTPException(status_code=404, detail="Metrics not found")
+        return metrics
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/predict")
-def predict(data: StudentData):
+def predict(data: StudentData, model: str = Query("rf")):
     try:
         input_dict = data.dict()
         input_df = pd.DataFrame([input_dict])
 
-        # Make prediction
-        prediction = model.predict(input_df)[0]
+        loaded = load_model(model)
 
-        # SHAP explanation
-        preprocessed_input = model.named_steps["preprocessor"].transform(input_df)
-        shap_values = explainer.shap_values(preprocessed_input)
-        feature_names = model.named_steps["preprocessor"].get_feature_names_out()
-        contributions = dict(zip(feature_names, shap_values[0]))
+        if isinstance(loaded, dict) and "pipeline" in loaded:
+            pipeline = loaded["pipeline"]
+            metrics = loaded.get("metrics", {})
+        else:
+            pipeline = loaded
+            metrics = {}
 
-        # Suggestions from rules
+        prediction = pipeline.predict(input_df)[0]
         suggestions = generate_suggestions(input_dict)
 
         return {
-            "predicted_score": round(prediction, 2),
-            "contributions": contributions,
+            "predicted_score": float(round(prediction, 2)),
+            "metrics": metrics,
             "suggestions": suggestions
         }
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
 
 @app.post("/radar-chart")
 def radar_chart(data: StudentData):
-    df = pd.read_csv("D:/ai_project/backend/StudentPerformanceFactors.csv")
-
     student_values = data.dict()
-
-    top_performers = df[df["Exam_Score"] >= 80]
-    avg_values = df.mean(numeric_only=True).to_dict()
+    top_performers = dataset[dataset["Exam_Score"] >= 80]
+    avg_values = dataset.mean(numeric_only=True).to_dict()
     top_values = top_performers.mean(numeric_only=True).to_dict()
 
     radar_features = ['Hours_Studied', 'Attendance', 'Sleep_Hours', 'Previous_Scores', 'Tutoring_Sessions', 'Physical_Activity']
@@ -94,3 +115,33 @@ def radar_chart(data: StudentData):
         "average_values": {k: round(avg_values[k], 2) for k in radar_features},
         "top_values": {k: round(top_values[k], 2) for k in radar_features}
     }
+
+@app.post("/feature-importance")
+def feature_importance(data: StudentData, model: str = Query("rf")):
+    print("Endpoint hit: /feature-importance")
+    try:
+        input_df = pd.DataFrame([data.dict()])
+        model_data = load_model(model)
+        pipeline = model_data["pipeline"] if isinstance(model_data, dict) else model_data
+
+        preprocessor = pipeline.named_steps["preprocessor"]
+        model_instance = pipeline.named_steps["model"]
+        transformed = preprocessor.transform(input_df)
+
+        explainer = shap.Explainer(model_instance)
+        shap_values = explainer(transformed)
+
+        feature_names = preprocessor.get_feature_names_out()
+        
+        # Convert SHAP values to native Python float types
+        importances = dict(sorted(
+            zip(feature_names, [float(v) for v in shap_values[0].values]),
+            key=lambda x: abs(x[1]),
+            reverse=True
+        ))
+
+        print("SHAP Values:", shap_values[0].values)
+        return {"feature_importance": dict(list(importances.items())[:5])}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"SHAP error: {str(e)}")

@@ -1,12 +1,15 @@
 import pandas as pd
+import numpy as np
+import os
+import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
+from xgboost import XGBRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
-import joblib
-import os
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 # Load dataset
 df = pd.read_csv("D:/ai_project/backend/StudentPerformanceFactors.csv")
@@ -15,7 +18,7 @@ df = pd.read_csv("D:/ai_project/backend/StudentPerformanceFactors.csv")
 X = df.drop("Exam_Score", axis=1)
 y = df["Exam_Score"]
 
-# Identify column types correctly
+# Column types
 numerical_cols = [
     'Hours_Studied', 'Attendance', 'Sleep_Hours', 'Previous_Scores',
     'Tutoring_Sessions', 'Physical_Activity'
@@ -44,48 +47,68 @@ preprocessor = ColumnTransformer([
     ("cat", cat_pipeline, categorical_cols)
 ])
 
-# Full pipeline with model
-pipeline = Pipeline([
-    ("preprocessor", preprocessor),
-    ("model", RandomForestRegressor(n_estimators=100, random_state=42))
-])
-
 # Train/test split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Fit model
-pipeline.fit(X_train, y_train)
+# Models dictionary
+models = {
+    "rf": RandomForestRegressor(n_estimators=100, random_state=42),
+    "xgb": XGBRegressor(n_estimators=100, random_state=42)
+}
 
-# Save model
-model_path = "D:/ai_project/backend/app/model/student_performance_model.pkl"
-joblib.dump(pipeline, model_path)
-print(f"✅ Model saved to: {model_path}")
+# Directory setup
+model_dir = "D:/ai_project/backend/app/model"
+os.makedirs(model_dir, exist_ok=True)
 
-# ------------------------------------------------------
-# Suggestion Rules (based on high performers)
-# ------------------------------------------------------
+for model_name, model in models.items():
+    pipeline = Pipeline([
+        ("preprocessor", preprocessor),
+        ("model", model)
+    ])
+    pipeline.fit(X_train, y_train)
+    y_pred = pipeline.predict(X_test)
 
-high_scorers = df[df['Exam_Score'] >= 80]
+    #  calculation of RMSE
+    mse = mean_squared_error(y_test, y_pred)
+    rmse = np.sqrt(mse)
 
-# Suggestion rules for numerical and categorical values
+    print(f"{model_name.upper()} - RMSE: {round(rmse, 2)}")
+
+    metrics = {
+        "mae": round(mean_absolute_error(y_test, y_pred), 2),
+        "mse": round(mse, 2),
+        "rmse": round(rmse, 2),
+        "r2": round(r2_score(y_test, y_pred), 2)
+    }
+
+    model_package = {
+        "pipeline": pipeline,
+        "metrics": metrics
+    }
+
+    path = os.path.join(model_dir, f"student_performance_{model_name}.pkl")
+    joblib.dump(model_package, path)
+    # Save the model with metrics
+    print(f" Saved model with metrics: {path}")
+
+# ---------------- Suggestions ----------------
+high_scorers = df[df["Exam_Score"] >= 80].copy()
+
+#high_scorers = df[df['Exam_Score'] >= 80]
 suggestion_rules = {}
 
-# Numerical suggestions: compute average
 for col in numerical_cols:
     if col in high_scorers.columns:
-        high_scorers.loc[:, col] = pd.to_numeric(high_scorers[col], errors='coerce')
-
+        high_scorers[col] = pd.to_numeric(high_scorers[col], errors='coerce')
         if high_scorers[col].notnull().any():
             suggestion_rules[col] = round(high_scorers[col].mean(), 2)
 
-# Categorical suggestions: compute mode
 for col in categorical_cols:
     if col in high_scorers.columns:
         mode_val = high_scorers[col].mode()
         if not mode_val.empty:
             suggestion_rules[col] = mode_val[0]
 
-# Save suggestion rules
-suggestion_path = "D:/ai_project/backend/app/model/suggestion_rules.pkl"
+suggestion_path = os.path.join(model_dir, "suggestion_rules.pkl")
 joblib.dump(suggestion_rules, suggestion_path)
-print(f"✅ Suggestion rules saved to: {suggestion_path}")
+print(f" Suggestion rules saved to: {suggestion_path}")

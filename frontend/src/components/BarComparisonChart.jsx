@@ -1,16 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+} from "chart.js";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const BarComparisonChart = ({ studentData }) => {
   const [chartData, setChartData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);  // Track loading state
-  const [error, setError] = useState(null);  // Track error state
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchChartData = async () => {
+      setIsLoading(true);
       try {
         const response = await fetch("http://localhost:8000/radar-chart", {
           method: "POST",
@@ -19,13 +28,14 @@ const BarComparisonChart = ({ studentData }) => {
         });
 
         if (!response.ok) {
-          throw new Error('Network response was not ok');
+          throw new Error("Failed to fetch chart data");
         }
 
         const data = await response.json();
+
         const labels = Object.keys(data.student_values);
 
-        const chartData = {
+        setChartData({
           labels,
           datasets: [
             {
@@ -44,35 +54,50 @@ const BarComparisonChart = ({ studentData }) => {
               backgroundColor: "rgba(75, 192, 192, 0.6)",
             },
           ],
-        };
-
-        setChartData(chartData);
+        });
       } catch (err) {
-        console.error("Error loading bar chart data:", err);
-        setError(err.message || 'An error occurred while fetching data.');
+        setError(err.message || "An error occurred while fetching chart data.");
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchChartData();
+    if (studentData) {
+      fetchChartData();
+    }
   }, [studentData]);
 
-  if (isLoading) {
-    return <p>Loading chart...</p>;
-  }
-
-  if (error) {
-    return <p>Error: {error}</p>;
-  }
+  if (isLoading) return <p>Loading chart...</p>;
+  if (error) return <p>Error: {error}</p>;
 
   return (
-    <div>
-      <h3>Student vs Top & Average Performers</h3>
+    <div style={{ maxWidth: "900px", margin: "0 auto", padding: "1rem" }}>
+      <h3 style={{ textAlign: "center", marginBottom: "1rem" }}>
+        Student vs Top & Average Performers
+      </h3>
       {chartData ? (
-        <Bar data={chartData} options={{ responsive: true, plugins: { legend: { position: "top" } } }} />
+        <Bar
+          data={chartData}
+          options={{
+            responsive: true,
+            plugins: {
+              legend: { position: "top" },
+              title: {
+                display: true,
+                text: "Comparison of Key Performance Factors",
+                font: { size: 16 }
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { precision: 0 }
+              }
+            }
+          }}
+        />
       ) : (
-        <p>No data available for the chart</p>
+        <p>No data to display.</p>
       )}
     </div>
   );
