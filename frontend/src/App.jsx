@@ -21,7 +21,7 @@ export default function App() {
       <h1 style={{ textAlign: 'center', fontWeight: 'bold' }}>Student Performance Predictor</h1>
 
       {/* Model Selection Dropdown */}
-      <Box sx={{ mb: 2, width: 300 }}>
+      {/* <Box sx={{ mb: 2, width: 300 }}>
         <FormControl fullWidth>
           <InputLabel>Select Model</InputLabel>
           <Select
@@ -30,27 +30,28 @@ export default function App() {
             onChange={(e) => setSelectedModel(e.target.value)}
           >
             <MenuItem value="rf">Random Forest</MenuItem>
-            <MenuItem value="svm">Support Vector Machine</MenuItem>
-            <MenuItem value="lr">Linear Regression</MenuItem>
-            <MenuItem value="dt">Decision Tree</MenuItem>
+            <MenuItem value="xgb">XGBoost</MenuItem>
+           
           </Select>
         </FormControl>
-      </Box>
+      </Box> */}
 
       {/* Show loading spinner or form */}
-      {isLoading ? (
+      {/* {isLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <CircularProgress color="primary" />
           <Typography variant="h6" sx={{ ml: 2 }}>Processing...</Typography>
         </Box>
-      ) : (
+      ) : ( */}
         <StudentForm
           setPredictionResult={setPredictionResult}
           setInputData={setInputData}
           setIsLoading={setIsLoading}
           handleError={handlePredictionError}
+          selectedModel={selectedModel}
+          setSelectedModel={setSelectedModel} 
         />
-      )}
+      {/* )} */}
 
       {/* Show error message if any */}
       {error && (

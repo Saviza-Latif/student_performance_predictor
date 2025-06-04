@@ -50,12 +50,27 @@ preprocessor = ColumnTransformer([
 # Train/test split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Models dictionary
-models = {
-    "rf": RandomForestRegressor(n_estimators=100, random_state=42),
-    "xgb": XGBRegressor(n_estimators=100, random_state=42)
-}
 
+
+
+
+# Improved models with better hyperparameters
+models = {
+    "rf": RandomForestRegressor(
+        n_estimators=300,
+        max_depth=20,
+        min_samples_split=5,
+        random_state=42
+    ),
+    "xgb": XGBRegressor(
+        n_estimators=300,
+        learning_rate=0.05,
+        max_depth=6,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        random_state=42
+    )
+}
 # Directory setup
 model_dir = "D:/ai_project/backend/app/model"
 os.makedirs(model_dir, exist_ok=True)
@@ -68,7 +83,7 @@ for model_name, model in models.items():
     pipeline.fit(X_train, y_train)
     y_pred = pipeline.predict(X_test)
 
-    #  calculation of RMSE
+    # Evaluation metrics
     mse = mean_squared_error(y_test, y_pred)
     rmse = np.sqrt(mse)
 
@@ -88,8 +103,8 @@ for model_name, model in models.items():
 
     path = os.path.join(model_dir, f"student_performance_{model_name}.pkl")
     joblib.dump(model_package, path)
-    # Save the model with metrics
     print(f" Saved model with metrics: {path}")
+
 
 # ---------------- Suggestions ----------------
 high_scorers = df[df["Exam_Score"] >= 80].copy()

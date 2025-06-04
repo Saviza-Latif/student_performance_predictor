@@ -49,7 +49,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+rf_data = joblib.load("app/model/student_performance_rf.pkl")
+xgb_data = joblib.load("app/model/student_performance_xgb.pkl")
 
+print("RF Metrics:", rf_data.get("metrics"))
+print("XGB Metrics:", xgb_data.get("metrics"))
 # Load and cache models
 cached_models = {}
 
@@ -64,12 +68,14 @@ def load_model(model_name: str):
 @app.get("/metrics")
 def get_model_metrics(model: str = Query("rf")):
     try:
+        print("Requested model for metrics:", model)
         model_data = load_model(model)
         metrics = model_data.get("metrics") if isinstance(model_data, dict) else {}
         if not metrics:
             raise HTTPException(status_code=404, detail="Metrics not found")
         return metrics
     except Exception as e:
+       
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/predict")

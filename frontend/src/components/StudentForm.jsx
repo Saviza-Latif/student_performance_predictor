@@ -12,7 +12,8 @@ import {
   Box
 } from '@mui/material';
 
-const StudentForm = ({ setPredictionResult, setInputData, setIsLoading, handleError }) => {
+const StudentForm = ({ setPredictionResult, setInputData, setIsLoading, handleError, selectedModel,    
+  setSelectedModel    }) => {
   const [formData, setFormData] = useState({
     Hours_Studied: '',
     Attendance: '',
@@ -35,7 +36,7 @@ const StudentForm = ({ setPredictionResult, setInputData, setIsLoading, handleEr
     Gender: '',
   });
 
-  const [selectedModel, setSelectedModel] = useState("rf");
+ 
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -71,7 +72,8 @@ const StudentForm = ({ setPredictionResult, setInputData, setIsLoading, handleEr
     setPredictionResult({
       predicted_score: prediction.predicted_score,
       suggestions: prediction.suggestions || [],
-      contributions: shapData.feature_importance || {}, // Inject SHAP values
+      contributions: shapData.feature_importance || {},
+      
     });
 
   } catch (err) {
