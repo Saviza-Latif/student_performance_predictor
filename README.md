@@ -5,12 +5,12 @@ It not only predicts scores but also compares a user's input with high scorers i
 
 **Features**
 
--**Predict Student Performance** based on user input (19 features).
--**Compare your score** with:
-  -The **average score** of the dataset.
-  -The **top performers** (high scorers).
--**Suggestions and tips** provided based on the habits and features of high-performing students.
--**Graphical representation** bar charts or radar charts for insightful comparison.
+-  **Predict Student Performance** based on user input (19 features).
+-  **Compare your score** with:
+  -  The **average score** of the dataset.
+  -  The **top performers** (high scorers).
+-  **Suggestions and tips** provided based on the habits and features of high-performing students.
+-  **Graphical representation** bar charts or radar charts for insightful comparison.
 
 **Technologies**
 
