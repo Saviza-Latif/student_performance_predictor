@@ -5,26 +5,26 @@ It not only predicts scores but also compares a user's input with high scorers i
 
 **Features**
 
-1.**Predict Student Performance** based on user input (19 features).
-2.**Compare your score** with:
-  a.The **average score** of the dataset.
-  b.The **top performers** (high scorers).
-3.**Suggestions and tips** provided based on the habits and features of high-performing students.
-4.**Graphical representation** bar charts or radar charts for insightful comparison.
+-**Predict Student Performance** based on user input (19 features).
+-**Compare your score** with:
+  -The **average score** of the dataset.
+  -The **top performers** (high scorers).
+-**Suggestions and tips** provided based on the habits and features of high-performing students.
+-**Graphical representation** bar charts or radar charts for insightful comparison.
 
 **Technologies**
 
 **Frontend**
-1.React.js
-2.Axios(for API calls)
-3.Chart.js / Recharts (for graphs)
-4.Material UI
+-React.js
+-Axios(for API calls)
+-Chart.js / Recharts (for graphs)
+-Material UI
 
 **Backend**
-1.FastAPI
-2.Scikit-learn (for the ML model)
-3.Pandas and NumPy (for data handling)
-4.Uvicorn (for serving FastAPI)
+-FastAPI
+-Scikit-learn (for the ML model)
+-Pandas and NumPy (for data handling)
+-Uvicorn (for serving FastAPI)
 
 **Dataset**
 From kaggle 
