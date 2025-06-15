@@ -1,16 +1,5 @@
 import React, { useState } from 'react';
-import {
-  TextField,
-  Button,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
-  Grid,
-  Paper,
-  Typography,
-  Box
-} from '@mui/material';
+import {TextField,Button,MenuItem,Select,InputLabel,FormControl,Grid,Paper,Typography,Box} from '@mui/material';
 
 const StudentForm = ({ setPredictionResult, setInputData, setIsLoading, handleError, selectedModel,    
   setSelectedModel    }) => {
@@ -52,7 +41,7 @@ const StudentForm = ({ setPredictionResult, setInputData, setIsLoading, handleEr
   setInputData(formData);
 
   try {
-    // Step 1: Get prediction
+   
     const predictionRes = await fetch(`http://localhost:8000/predict?model=${selectedModel}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -60,7 +49,7 @@ const StudentForm = ({ setPredictionResult, setInputData, setIsLoading, handleEr
     });
     const prediction = await predictionRes.json();
 
-    // Step 2: Get feature importance
+   
     const shapRes = await fetch(`http://localhost:8000/feature-importance?model=${selectedModel}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -68,7 +57,7 @@ const StudentForm = ({ setPredictionResult, setInputData, setIsLoading, handleEr
     });
     const shapData = await shapRes.json();
 
-    // Step 3: Combine results
+    
     setPredictionResult({
       predicted_score: prediction.predicted_score,
       suggestions: prediction.suggestions || [],

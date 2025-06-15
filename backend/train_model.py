@@ -54,7 +54,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 
 
 
-# Improved models with better hyperparameters
+
 models = {
     "rf": RandomForestRegressor(
         n_estimators=300,
@@ -71,7 +71,6 @@ models = {
         random_state=42
     )
 }
-# Directory setup
 model_dir = "D:/ai_project/backend/app/model"
 os.makedirs(model_dir, exist_ok=True)
 
@@ -83,7 +82,7 @@ for model_name, model in models.items():
     pipeline.fit(X_train, y_train)
     y_pred = pipeline.predict(X_test)
 
-    # Evaluation metrics
+    # --------------Evaluation metrics-----------
     mse = mean_squared_error(y_test, y_pred)
     rmse = np.sqrt(mse)
 

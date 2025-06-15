@@ -1,26 +1,8 @@
 import React, { useEffect, useState } from "react";
 import RadarChart from './RadarChart';
 import BarComparisonChart from './BarComparisonChart';
-import {
-  Typography,
-  Card,
-  CardContent,
-  List,
-  ListItem,
-  Divider,
-  CircularProgress,
-  Box,
-} from '@mui/material';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  ResponsiveContainer,
-} from 'recharts';
-
+import {Typography,Card,CardContent,List,ListItem,Divider,CircularProgress,Box} from '@mui/material';
+import {BarChart,Bar,XAxis,YAxis,Tooltip,CartesianGrid,ResponsiveContainer} from 'recharts';
 export default function PredictionResult({ result, isLoading, inputData, selectedModel = "rf" }) {
   const [metrics, setMetrics] = useState(null);
   const [metricsError, setMetricsError] = useState(false);
@@ -65,7 +47,7 @@ export default function PredictionResult({ result, isLoading, inputData, selecte
     importance: Math.abs(importance), 
   }));
   console.log("data of importance",data);
-  // Debugging: Log the result data to see if it's being passed correctly
+  
   console.log("Prediction Result:", result);
   console.log("Metrics:", metrics);
 
@@ -76,7 +58,7 @@ export default function PredictionResult({ result, isLoading, inputData, selecte
           Predicted Exam Score: <strong>{predicted_score}</strong>
         </Typography>
 
-        {/* Display model performance metrics */}
+       
         {metricsError ? (
           <Typography variant="body2" color="textSecondary">
             Could not fetch model metrics. Please try again later.
@@ -135,7 +117,7 @@ export default function PredictionResult({ result, isLoading, inputData, selecte
         )}
       </CardContent>
 
-      {/* Display additional charts if input data is available */}
+      {/* Display additional charts */}
       {inputData && (
         <>
           <RadarChart studentData={inputData} />

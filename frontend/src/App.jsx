@@ -10,7 +10,7 @@ export default function App() {
   const [selectedModel, setSelectedModel] = useState('rf'); // Default to Random Forest
   const [error, setError] = useState(null); // To handle errors
 
-  // Function to handle errors passed from child components
+
   const handlePredictionError = (errorMessage) => {
     setError(errorMessage);
     setIsLoading(false);

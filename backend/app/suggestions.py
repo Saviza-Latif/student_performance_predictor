@@ -1,7 +1,7 @@
 import joblib
 
 # Load suggestion rules
-suggestion_rules = joblib.load("D:/ai_project/backend/app/model/suggestion_rules.pkl")
+suggestion_rules = joblib.load("ai_project/backend/app/model/suggestion_rules.pkl")
 
 def generate_suggestions(data: dict) -> list:
     suggestions = []
@@ -21,11 +21,11 @@ def generate_suggestions(data: dict) -> list:
 
     def check_categorical(key, message):
         if key in suggestion_rules and key in data:
-            # Ensure proper case-insensitive comparison
+           
             if str(data[key]).strip().lower() != str(suggestion_rules[key]).strip().lower():
                 suggestions.append(message.format(suggestion_rules[key]))
 
-    # Numerical feature advice
+    
     check_numerical('Sleep_Hours', "Top students sleep around {:.1f} hours. Try to sleep more.")
     check_numerical('Hours_Studied', "Top performers study about {:.1f} hours. Try to increase study time.")
     check_numerical('Attendance', "Students with attendance ≥ {:.1f}% score better. Attend more classes.")
